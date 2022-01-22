@@ -1,0 +1,37 @@
+Scripts that I need to make
+
+- I need a way to order products
+- I need a way to sign into accounts
+- I need a way to create accounts
+- I need a way to bypass or solve captchas | potential machine learning
+- I need a way to check if item is available
+- I need a way to access database full of unfilled orders
+- I need a way to change unfilled orders to filled orders once order completed
+
+
+
+Processes involved in user account creation
+
+1.) user creates account
+2.) email confirmation
+3.) details entered into database
+4.)
+
+Processes involved in placing order
+
+1.) user places order for a product
+2.) order gets placed into unfilled orders database
+3.) if users first order, create shopping accounts
+4.) store shopping account details in database (encrypt with aes 256)
+
+Processes involved In buying product
+
+1.) access database with unfilled orders
+2.) create list of all the different products that have been reserved
+3.) launch a script that checks to see if any of the items in the list are available
+4.) sign into shopping account (account created upon their first order)
+5.) complete captchas if they appear
+6.) go to product page
+7.) buy product
+8.) move that order from unfilled to filled
+9.) email / notify customer their order has been placed
