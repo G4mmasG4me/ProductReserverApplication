@@ -62,6 +62,10 @@ if __name__ == '__main__':
     # create a sign in loop, so incase it fails it retires.
     amazon_sign_in_cookies = amazon_sign_in_selenium.sign_in_amazon()
 
+    # create requests session here and then load cookies into it and pass it to each order
+    # or create a new session for each order, and then load cookies into it.
+    # 2nd option is expensive as you repeat creating a session and loading cookies. But less conflict
+
     order_queue = multiprocessing.Queue()
 
     processes = []
