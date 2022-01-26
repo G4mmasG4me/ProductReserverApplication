@@ -2,6 +2,7 @@
 import mysql.connector
 import multiprocessing
 import time
+import requests
 
 import amazon_check_stock_requests
 import amazon_sign_in_selenium
@@ -60,16 +61,28 @@ if __name__ == '__main__':
     # and then transfer cookies to requests
 
     # create a sign in loop, so incase it fails it retires.
-    amazon_sign_in_cookies = amazon_sign_in_selenium.sign_in_amazon()
+    amazon_signed_in = False
+    sign_in_attempts = 0
+    while amazon_signed_in is False and sign_in_attempts < 5:
+      sign_in_attempts += 1
+      amazon_signed_in, amazon_sign_in_cookies = amazon_sign_in_selenium.sign_in_amazon()
 
-    order_queue = multiprocessing.Queue()
 
-    processes = []
-    item_available = True
-    if item_available:
+    if amazon_signed_in:
+      # start requests session
+      amazon_session = requests.Session()
+      # laod cookies into session
+      for cookie in amazon_sign_in_cookies:
+        amazon_session.amazon_sign_in_cookies.set(cookie['name'], cookie['value'])
+
+      item_available = False
+      order_queue = multiprocessing.Queue()
+
+      processes = []
       for availability_position, availability in enumerate(availability_output):
         # if the product is available to order
         if availability[1] == True:
+          item_available = True
           order_item = unique_order_items[availability_position]
           product_link = order_item[2]
           product_region = order_item[3]
@@ -84,17 +97,19 @@ if __name__ == '__main__':
           
           for item_order_position, item_order in enumerate(item_orders):
             # item order = [unfilled_order_item_id, address_line_1, address_line_2, address_postcode, address_city, address_county]
-            p = multiprocessing.Process(target=amazon_buy_requests.buy_product, args=(item_order, order_queue, product_link, amazon_sign_in_cookies))
+            p = multiprocessing.Process(target=amazon_buy_requests.buy_product, args=(item_order, order_queue, product_link, amazon_session))
             processes.append(p)
-      for p in processes:
-        p.start()
-      for p in processes:
-        p.join()
       
-      order_output = []
-      for p in processes:
-        order_output.append(order_items_queue.get())
-      print(order_output)
-      # each item in order_output should look like [unfilled_order_item_id, status]
-      # to get specific order
-      # order = unique_order_items[positon]
+      if item_available:
+        for p in processes:
+          p.start()
+        for p in processes:
+          p.join()
+          
+          order_output = []
+          for p in processes:
+            order_output.append(order_items_queue.get())
+          print(order_output)
+        # each item in order_output should look like [unfilled_order_item_id, status]
+        # to get specific order
+        # order = unique_order_items[positon]

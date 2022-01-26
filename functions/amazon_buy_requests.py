@@ -1,12 +1,8 @@
 import requests
 
-def buy_product(item_order, order_queue, product_link, amazon_sign_in_cookies):
+def buy_product(item_order, order_queue, product_link, amazon_signed_in_session):
   pass
-  # start requests session
-  session = requests.Session()
-  # laod cookies into session
-  for cookie in amazon_sign_in_cookies:
-    session.amazon_sign_in_cookies.set(cookie['name'], cookie['value'])
+  
 
   # load website in requests session
   # check if 
