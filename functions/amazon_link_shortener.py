@@ -14,3 +14,5 @@ shortened_link = 'https://www.amazon.' + tld_string + '/' + url_shortened_path
 
 print(shortened_link)
 
+# amazon shortened link
+# scheme + '://' + netloc + '/dp' + path.split('/')[0]
