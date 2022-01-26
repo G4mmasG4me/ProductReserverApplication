@@ -27,15 +27,3 @@ print(soup.prettify())
 # email
 # encryptedPwd | encrypted upon post, so the payload is encrypted unlike when you are idle on the sign in page
 # encryptedPasswordExpected | blank
-
-
-# may be able to login with selenium, and then switch to requests, by getting all of the cookies and setting them on the current requests session
-
-'''
-s = requests.session()
-s.headers.update(headers)
-
-for cookie in driver.get_cookies():
-	c = {cookie['name']: cookie['value']}
-	s.cookies.update(c)
-'''
