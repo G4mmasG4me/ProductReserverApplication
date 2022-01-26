@@ -23,8 +23,8 @@ for field in form.find_all('input'):
 	except:
 		pass
 
-USERNAME = 'domhough@hotmail.co.uk'
-PASSWORD = 'Turkey19'
+USERNAME = 'TEST123@TEST123.COM'
+PASSOWRD = 'TEST123'
 
 data[u'email'] = USERNAME
 data[u'password'] = PASSWORD
