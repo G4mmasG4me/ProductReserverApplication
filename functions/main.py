@@ -108,10 +108,23 @@ if __name__ == '__main__':
         for p in processes:
           p.join()
           
-          order_output = []
-          for p in processes:
-            order_output.append(order_items_queue.get())
-          print(order_output)
-        # each item in order_output should look like [unfilled_order_item_id, status]
-        # to get specific order
+        order_output = []
+        for p in processes:
+          order_output.append(order_items_queue.get())
+        print(order_output)
+
+        # each item in order_output should look like [unfilled_order_item_id, order_placed, status, details]
+        for unfilled_order_item_id, order_placed, status, details in order_output:
+          if order_placed: # if order successfully placed
+            pass
+            # move unfilled_order_item to filled_order_item
+            sql = ('BEGIN TRANSACTION; INSERT INTO filled_order_item (order_item_id) SELECT (order_item_id) FROM unfilled_order_item WHERE unfilled_order_item.id = %s; DELETE FROM unfilled_order_item WHERE unfilled_order_item.id = %s; COMMIT;')
+            mycursor.execute(sql, (unfilled_order_item_id, unfilled_order_item_id)) # parameters are product id and link region
+            # add order details to db
+            
+
+            # email user
+
+
+        
         # order = unique_order_items[positon]
