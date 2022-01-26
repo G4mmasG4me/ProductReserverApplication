@@ -27,9 +27,9 @@ def check_stock_amazon(unique_order, q, position): # unique order is a list of u
     captcha_form = soup.find('form', {'action': '/errors/validateCaptcha'})
     while availability_element == None and captcha_form and captcha_attempts < 5: # if availability is not found, and captcha form is found, captcha attempts is less than 5
       captcha_attempts += 1
-      captcha_id = soup.find('input', {'name': 'amzn'})['value']
-      captcha_image_url = soup.find('img')['src']
-      captcha_solution = AmazonCaptcha.fromlink(captcha_image_url).solve()
+      captcha_id = soup.find('input', {'name': 'amzn'})['value'] # attempts to find the captcha id
+      captcha_image_url = soup.find('img')['src'] # gets the source link of the captcha image
+      captcha_solution = AmazonCaptcha.fromlink(captcha_image_url).solve() # solves captcha
       payload = {
         'amzn': captcha_id,
         'amzn-r': parsed_url.path,
