@@ -8,11 +8,7 @@ tld_list = parsed_url.netloc.split('.')[2:]
 tld_string = '.'.join(tld_list)
 
 url_path_components = parsed_url.path.split('/')
-url_shortened_path = '/'.join(url_path_components[url_path_components.index('dp'):url_path_components.index('dp')+2])
+dp_pos = url_path_components.index('dp')
+url_shortened_path = url_path_components[dp_pos+1]
 
-shortened_link = 'https://www.amazon.' + tld_string + '/' + url_shortened_path
-
-print(shortened_link)
-
-# amazon shortened link
-# scheme + '://' + netloc + '/dp' + path.split('/')[0]
+shortened_link = parsed_url.scheme + '://' + parsed_url.netloc + '/dp/' + url_shortened_path
