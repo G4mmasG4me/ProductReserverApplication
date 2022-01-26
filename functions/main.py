@@ -76,6 +76,8 @@ if __name__ == '__main__':
         amazon_session.amazon_sign_in_cookies.set(cookie['name'], cookie['value'])
 
       item_available = False
+
+      # create order queue
       order_queue = multiprocessing.Queue()
 
       processes = []
