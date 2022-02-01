@@ -58,3 +58,14 @@ def check_stock_amazon(unique_order, q, position): # unique order is a list of u
 # amzn: get from form
 # amzn-r: refer website / product url e.g. /dp/B08H95Y452
 # field-keywords: captcha answer
+
+
+# current problem
+# only works on english speaking websites
+# to work on all language website
+# I need to check if it shows the price of the product or not
+# If it shows the price, it means it's in stock
+# If it doesn't show the price, it means it's out of stock+
+
+# some amazon websites have product price with id="priceblock_ourprice"
+# others have higher elements with id="corePrice_desktop"
