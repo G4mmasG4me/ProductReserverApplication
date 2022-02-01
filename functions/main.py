@@ -7,6 +7,7 @@ import requests
 import amazon_check_stock_requests
 import amazon_sign_in_selenium
 import amazon_buy_requests
+import email_customer
 
 # connect to database
 
@@ -40,25 +41,22 @@ if __name__ == '__main__':
     # seperates the different components of unique orders
     product_ids, link_ids, product_links, order_regions = map(list, zip(*unique_order_items))
 
-    processes = []
+    chekck_availability_processes = []
     # :
     order_items_queue = multiprocessing.Queue()
     for order_item_position, unique_order in enumerate(unique_order_items):
       p = multiprocessing.Process(target=amazon_check_stock_requests.check_stock_amazon, args=(unique_order, order_items_queue, order_item_position,)) # stock_checker.check_stock
-      processes.append(p)
+      chekck_availability_processes.append(p)
       p.start()
-    for p in processes:
+    for p in chekck_availability_processes:
       p.join()
 
     availability_output = []
-    for p in processes:
+    for p in chekck_availability_processes:
       availability_output.append(order_items_queue.get())
     print(availability_output)
 
     # runs a for loop through the list of availability outputs
-
-    # need to sign in with selenium
-    # and then transfer cookies to requests
 
     # create a sign in loop, so incase it fails it retires.
     amazon_signed_in = False
@@ -80,7 +78,7 @@ if __name__ == '__main__':
       # create order queue
       order_queue = multiprocessing.Queue()
 
-      processes = []
+      buy_item_processes = []
       for availability_position, availability in enumerate(availability_output):
         # if the product is available to order
         if availability[1] == True:
@@ -88,43 +86,54 @@ if __name__ == '__main__':
           order_item = unique_order_items[availability_position]
           product_link = order_item[2]
           product_region = order_item[3]
-          # next need to get all orders items on unfilled orders and then get the corresponding order details
-          # things i need to select
-          # order_item_id, address_line_1, address_line_2, address_postcode, address_city, address_county, address_country.
-          sql = ('SELECT unfilled_order_item.id, address.line_1, address.line_2, address.postcode, address.city, address.county FROM unfilled_order_item INNER JOIN order_item ON unfilled_order_item.order_item_id = order_item.id INNER JOIN address ON order_item.address_id = address.id WHERE order_item.product_id = %s AND address.country = %s  ')
+
+          sql = ('SELECT unfilled_order_item.id, unfilled_order_item.order_item_id, address.line_1, address.line_2, address.postcode, address.city, address.county FROM unfilled_order_item INNER JOIN order_item ON unfilled_order_item.order_item_id = order_item.id INNER JOIN address ON order_item.address_id = address.id WHERE order_item.product_id = %s AND address.country = %s  ')
           mycursor.execute(sql, (order_item[0], order_item[3])) # parameters are product id and link region
           item_orders = mycursor.fetchall()
 
           
           
           for item_order_position, item_order in enumerate(item_orders):
-            # item order = [unfilled_order_item_id, address_line_1, address_line_2, address_postcode, address_city, address_county]
+            # item order = [unfilled_order_item_id, order_item_id, address_line_1, address_line_2, address_postcode, address_city, address_county]
             p = multiprocessing.Process(target=amazon_buy_requests.buy_product, args=(item_order, order_queue, product_link, amazon_session))
-            processes.append(p)
+            buy_item_processes.append(p)
       
       if item_available:
-        for p in processes:
+        
+        for p in buy_item_processes:
           p.start()
-        for p in processes:
+        for p in buy_item_processes:
           p.join()
           
         order_output = []
-        for p in processes:
+        for p in buy_item_processes:
           order_output.append(order_items_queue.get())
-        print(order_output)
 
+        email_processes = []
+        email_queue = multiprocessing.Queue()
         # each item in order_output should look like [unfilled_order_item_id, order_placed, status, details]
-        for unfilled_order_item_id, order_placed, status, details in order_output:
+        for unfilled_order_item_id, order_item_id, order_placed, status, details in order_output:
           if order_placed: # if order successfully placed
-            pass
             # move unfilled_order_item to filled_order_item
             sql = ('BEGIN TRANSACTION; INSERT INTO filled_order_item (order_item_id) SELECT (order_item_id) FROM unfilled_order_item WHERE unfilled_order_item.id = %s; DELETE FROM unfilled_order_item WHERE unfilled_order_item.id = %s; COMMIT;')
             mycursor.execute(sql, (unfilled_order_item_id, unfilled_order_item_id)) # parameters are product id and link region
-            # add order details to db
+
+            # things to insert into db
+            amazon_order_code = 0
+            sql = ('INSERT INTO order_item (order_site, order_code) VALUES (%s, %s) WHERE id = %s')
+            mycursor.execute(sql, ('Amazon', amazon_order_code, order_item_id))
             
 
             # email user
-
-
+            # create a process of emailing customers
+            p = multiprocessing.Process(target=email_customer.email_on_order_completition, args=(email_queue))
+            email_processes.append(p)
         
-        # order = unique_order_items[positon]
+        for p in email_processes:
+          p.start()
+        for p in email_processes:
+          p.join()
+        
+        email_output = []
+        for p in email_processes:
+          email_output.append(email_queue.get())
