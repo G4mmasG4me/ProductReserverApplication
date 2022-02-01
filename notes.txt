@@ -48,3 +48,16 @@ to buy products once the product is available
 above is the easiest solution so far
 
 a more complex but faster solution would be to use requests to sign into amazon, this would require finding out the metadata1 algorithm so that I can insert the metadata value into the form, which will bypass the bot block.
+
+
+
+
+running the program
+
+
+need to user server cluster
+
+1 head node
+multiple computer nodes
+
+best current scalable cpu is 8380HL, 28 cores, 2.9Ghz, 4.3GHz Boost, up to 8 other cpus.
