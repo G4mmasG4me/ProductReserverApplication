@@ -23,9 +23,8 @@ def check_stock_amazon(product_url, q, position): # unique order is a list of un
   captcha_attempts = 0
   if webpage.url == product_url and webpage.status_code == 200: # if webpage is equal to target url, and webpage is connected
     soup = BeautifulSoup(webpage.content, 'html.parser')
-    availability_element = soup.find('div', {'id': 'availability'}) # finds availability element, returns the element or None
     captcha_form = soup.find('form', {'action': '/errors/validateCaptcha'})
-    while availability_element == None and captcha_form and captcha_attempts < 5: # if availability is not found, and captcha form is found, captcha attempts is less than 5
+    while captcha_form and captcha_attempts < 5: # if availability is not found, and captcha form is found, captcha attempts is less than 5
       captcha_attempts += 1
       captcha_id = soup.find('input', {'name': 'amzn'})['value'] # attempts to find the captcha id
       captcha_image_url = soup.find('img')['src'] # gets the source link of the captcha image
@@ -37,19 +36,32 @@ def check_stock_amazon(product_url, q, position): # unique order is a list of un
       }
       webpage = session.post(captcha_url, headers=headers, params=payload)
       soup = BeautifulSoup(webpage.content, 'html.parser')
-      availability_element = soup.find('div', {'id': 'availability'}) # finds availability element, returns the element or None
       captcha_form = soup.find('form', {'action': '/errors/validateCaptcha'})
       
-    if availability_element and captcha_form == None:
-      availability_message = availability_element.find('span', recursive=False).get_text().strip()
-      if availability_message == 'Currently unavailable.':
-        q.put([position, False])
+    if captcha_form == None:
+      price_container = soup.find('div', {'id': 'apex_desktop'})
+      if price_container:
+        price_a_offscreen = price_container.find('span', {'class': 'a-offscreen'})
       else:
-        q.put([position, True])
+        price_a_offscreen = None
+      priceblock_ourprice = soup.find('span', {'id': 'priceblock_ourprice'})
+      buy_options = soup.find('span', {'id': 'buybox-see-all-buying-choices'})
+      if price_a_offscreen or priceblock_ourprice:
+        q.put([position, False]) # In Stock
+      elif buy_options:
+        print('Other Options')
+      else:
+        q.put([position, True]) # Out of Stock
+        
     else:
       q.put([position, str('Captcha Fail')])
   else:
     q.put([position, 'Error: ' +  webpage.url + ' - ' + webpage.status_code])
+
+
+links = ['https://www.amazon.co.uk/dp/B009DL2TBA', 'https://www.amazon.co.uk/dp/B07HBW5HVL', 'https://www.amazon.co.uk/dp/B08S3FMVV7', 'https://www.amazon.co.uk/dp/B09MT54XQZ', 'https://www.amazon.co.uk/dp/B08H95Y452']
+for link in links:
+  check_stock_amazon(link)
 
 
 
@@ -75,7 +87,3 @@ def check_stock_amazon(product_url, q, position): # unique order is a list of un
 # if i rely on availability message, then it's not going to work across different languages
 # could create a list of all unavailable message across different languages
 
-price_container = soup.find('div', {'id': 'apex_desktop'})
-price = price_container.find('span', {'class': 'a-offscreen'})
-
-price = soup.find('span', {'id': 'priceblock_ourprice'})
