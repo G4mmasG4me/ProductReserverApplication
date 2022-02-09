@@ -13,3 +13,6 @@ chrome_options = Options()
 #chrome_options.add_argument("--disable-gpu")
 
 driver = webdriver.Chrome(executable_path=os.getcwd() + r"\chromedriver.exe", options=chrome_options)
+
+amazon_basket_url = 'https://%s/gp/cart/view.html?ref_=nav_cart'
+print(amazon_bakset_url)
