@@ -5,6 +5,8 @@ from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 import os
 
 chrome_options = Options()
@@ -12,7 +14,8 @@ chrome_options = Options()
 #chrome_options.add_argument("--disable-extensions")
 #chrome_options.add_argument("--disable-gpu")
 
-driver = webdriver.Chrome(executable_path=os.getcwd() + r"\chromedriver.exe", options=chrome_options)
+s = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=s, options=chrome_options)
 
 amazon_sign_in_url = 'https://www.amazon.com/gp/sign-in.html'
 
@@ -39,8 +42,15 @@ def sign_in_amazon():
               driver.find_element_by_id('auth-warning-message-box')
               return [False, 'Wrong Password']
             except NoSuchElementException as e: # no error box
-              cookies = driver.get_cookies()
-              return [True, cookies]
+              
+              try:
+                # find captcha box
+                pass
+              except:
+                ubid_cookie = driver.get_cookie('ubid-main')
+                x_cookie = driver.get_cookie('x-main')
+                session_token_cookie = driver.get_cookie('session-token')
+                return [True, [ubid_cookie, x_cookie, session_token_cookie]]
               # check if logged in
               # may have mobile number popup
           except NoSuchElementException as e: # if no password input box
@@ -50,13 +60,18 @@ def sign_in_amazon():
     except NoSuchElementException as e: # if email input box not found
       return [False, 'No Email Input']
 
-
-
-output = sign_in_amazon()
-print(output)
-
-# cookies required to keep login
+# cookies required to keep login | .co.uk
 # ubid-acbuk
 # x-acbuk
 # session-token
 # if you delete these cookies, then you get logged out
+
+# cookies required to keep login | .com
+# ubid-main
+# x-main
+# session-token
+
+# cookies required to keep login | .fr
+# ubid-abcfr
+# x-acbfr
+# session-token

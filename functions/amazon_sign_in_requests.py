@@ -12,6 +12,8 @@ headers = {
 s = requests.Session()
 webpage = s.get(url, headers=headers)
 
+
+
 soup = BeautifulSoup(webpage.content, 'html.parser')
 print(soup.prettify())
 
@@ -27,3 +29,6 @@ print(soup.prettify())
 # email
 # encryptedPwd | encrypted upon post, so the payload is encrypted unlike when you are idle on the sign in page
 # encryptedPasswordExpected | blank
+
+
+# Scrapy - crawls javascript generated content
