@@ -22,64 +22,82 @@ s = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=s, options=chrome_options)
 
 amazon_sign_in_url = 'https://www.amazon.com/gp/sign-in.html'
-amazon_sign_in_check_url = '/ap/sigin'
+amazon_sign_in_check_url = '/ap/signin'
 
 sign_in_email = 'productreservertest@gmail.com'
 sign_in_password = 'ProdReserve2022'
 
 def sign_in_amazon():
-  driver.get(amazon_sign_in_url)
-  if urlparse(driver.current_url).path == amazon_sign_in_check_url: # if currently on sign in page
-    try: # try signing in
-      email_input = driver.find_element(By.ID, 'ap_email')
-      email_input.send_keys(sign_in_email)
-      email_input.submit()
-      if urlparse(driver.current_url).path == amazon_sign_in_check_url: # if currently on sign in page
-        try: # tries to find if there is an error message, i.e. wrong email
-          driver.find_element(By.ID, 'auth-error-message-box')
-          return [False, 'Wrong Email']
-        except NoSuchElementException as e: # if no error message box
-          try: # tries to input password and submit
-            password_input = driver.find_element(By.ID, 'ap_password')
-            password_input.send_keys(sign_in_password)
-            password_input.submit()
-            try: # tries to find if there is an error message, i.e. wrong passwrod
-              driver.find_element(By.ID, 'auth-warning-message-box')
-              return [False, 'Wrong Password']
-            except NoSuchElementException as e: # no error box |
-              try:
-                # find captcha box
-                captcha_box = driver.find_element(By.ID, '')
-                return [False, 'Captcha'] # cant currently solve captcha, develop ML to solve amazon captcha
-                # upon solving captcha
-                if urlparse(driver.current_url).netloc == 'www.amazon.com':
-                  ubid_cookie = driver.get_cookie('ubid-main')
-                  x_cookie = driver.get_cookie('x-main')
-                  session_token_cookie = driver.get_cookie('session-token')
-                  return [True, [ubid_cookie, x_cookie, session_token_cookie]]
-                else:
-                  return [False, 'Error Signing In']
-              except NoSuchElementException: # successfull login
-                if urlparse(driver.current_url).netloc == 'www.amazon.com':
-                  ubid_cookie = driver.get_cookie('ubid-main')
-                  x_cookie = driver.get_cookie('x-main')
-                  session_token_cookie = driver.get_cookie('session-token')
-                  return [True, [ubid_cookie, x_cookie, session_token_cookie]]
-                else:
-                  return [False, 'Error Signing In']
-              except Exception as e:
-                return [False, 'Error Solving Captcha: %s' % e]
-          except NoSuchElementException as e: # if no password input box
-            return [False, 'No Password Input'] 
-          except Exception as e:
-            return [False, 'Unable to Input Password: %s' % e]
-      else: # not on sign in page
-        return [False, 'Not On Sign In Page']
-    except NoSuchElementException as e: # if email input box not found
-      return [False, 'No Email Input']
-    except Exception as e:
-      return [False, 'Unable to Input Email: %s' % e]
+  try:
+    driver.get(amazon_sign_in_url)
+    if urlparse(driver.current_url).path == amazon_sign_in_check_url: # if currently on sign in page
+      try: # try signing in
+        email_input = driver.find_element(By.ID, 'ap_email')
+        email_input.send_keys(sign_in_email)
+        email_input.submit()
+        if urlparse(driver.current_url).path == amazon_sign_in_check_url: # if currently on sign in page
+          try: # tries to find if there is an error message, i.e. wrong email
+            driver.find_element(By.ID, 'auth-error-message-box')
+            return [False, 'Wrong Email']
+          except NoSuchElementException as e: # if no error message box
+            try: # tries to input password and submit
+              password_input = driver.find_element(By.ID, 'ap_password')
+              password_input.send_keys(sign_in_password)
+              password_input.submit()
+              try: # tries to find if there is an error message, i.e. wrong passwrod
+                driver.find_element(By.ID, 'auth-warning-message-box')
+                return [False, 'Wrong Password']
+              except NoSuchElementException as e: # no error box |
+                try:
+                  # find captcha box
+                  captcha_box = driver.find_element(By.ID, 'captcha-form-xyz-change-me') # change captcha form id once known
+                  return [False, 'Captcha'] # cant currently solve captcha, develop ML to solve amazon captcha
+                  # upon solving captcha
+                  if urlparse(driver.current_url).netloc == 'www.amazon.com':
+                    ubid_cookie = driver.get_cookie('ubid-main')
+                    x_cookie = driver.get_cookie('x-main')
+                    session_token_cookie = driver.get_cookie('session-token')
+                    return [True, [ubid_cookie, x_cookie, session_token_cookie]]
+                  else:
+                    return [False, 'Error Signing In']
+                except NoSuchElementException: # successfull login
+                  if urlparse(driver.current_url).netloc == 'www.amazon.com':
+                    ubid_cookie = driver.get_cookie('ubid-main')
+                    x_cookie = driver.get_cookie('x-main')
+                    session_token_cookie = driver.get_cookie('session-token')
+                    return [True, [ubid_cookie, x_cookie, session_token_cookie]]
+                  else:
+                    return [False, 'Error Signing In']
+                except Exception as e:
+                  return [False, 'Error Solving Captcha: %s' % e]
+            except NoSuchElementException as e: # if no password input box
+              return [False, 'No Password Input'] 
+            except Exception as e:
+              return [False, 'Unable to Input Password: %s' % e]
+        else: # not on sign in page
+          return [False, 'Not On Sign In Page']
+      except NoSuchElementException as e: # if email input box not found
+        return [False, 'No Email Input']
+      except Exception as e:
+        return [False, 'Unable to Input Email: %s' % e]
+    else:
+      return [False, 'Not on Sign In Page']
+  finally:
+    driver.close()
 
+if __name__ == '__main__':
+  status, cookies_or_error = sign_in_amazon()
+  if status is True:
+    print('Status: %s' % status)
+    print('Cookies: %s' % cookies_or_error)
+  elif status is False:
+    print('Status: %s' % status)
+    print('Error: %s' % cookies_or_error)
+  else:
+    print('Unknown Error')
+    print('Unknown Status: %s' % status)
+    print('Cookies or Error: %s' % cookies_or_error)
+  quit()
 # cookies required to keep login | .co.uk
 # ubid-acbuk
 # x-acbuk
@@ -88,7 +106,7 @@ def sign_in_amazon():
 
 # cookies required to keep login | .com
 # ubid-main
-# x-main
+# x-mainW
 # session-token
 
 # cookies required to keep login | .fr
