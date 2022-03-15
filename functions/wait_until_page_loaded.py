@@ -1,3 +1,4 @@
+# imports
 import time
 
 def wait_until_page_loaded(driver, max_attempts):
