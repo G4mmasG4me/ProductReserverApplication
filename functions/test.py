@@ -1,6 +1,4 @@
-from urllib.parse import urlparse
-
-check_out_url = 'https://www.amazon.co.uk/gp/buy/spc/handlers/display.html?hasWorkingJavascript=1'
-
-parsed_url = urlparse(check_out_url)
-print(parsed_url)
+product_details = [[0,1], [3,4]]
+product_link = [2,5]
+product_details = tuple(zip(*zip(*product_details), product_link))
+print(product_details)
