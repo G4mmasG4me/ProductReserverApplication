@@ -2,7 +2,7 @@ import smtplib
 port = 587
 smtp_server = 'smtp.gmail.com'
 sender_email = 'productreservertest@gmail.com'
-password = 'byumamkhzzgazkgx'
+password = '########'
 
 def email_on_order_completion(receiver_email, order_details):
 
